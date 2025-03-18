@@ -8,12 +8,8 @@ const personSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  age: {
-    type: Number
-  },
-  favoriteFoods: {
-    type: [String]
-  }
+  age: Number,
+  favoriteFoods: [String]
 })
 
 let Person = personSchema;
