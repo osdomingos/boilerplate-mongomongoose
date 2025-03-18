@@ -1,7 +1,7 @@
 require('dotenv').config();
 mongoose = require('mongoose');
 
-mongoose.connect(MONGO_URI, { userNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 let Person;
 
