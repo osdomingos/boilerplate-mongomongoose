@@ -15,6 +15,7 @@ const personSchema = new mongoose.Schema({
 let Person = mongoose.model("Person", personSchema);
 
 let arrayOfPeople = [
+  { name: "Osmar", age: 34, favoriteFoods: ["pizza", "lasanha", "estrogonofe"] },
   { name: "Maria", age: 28, favoriteFoods: ["sushi", "temaki", "ramen"] },
   { name: "João", age: 40, favoriteFoods: ["feijoada", "pão de queijo", "churrasco"] },
   { name: "Ana", age: 22, favoriteFoods: ["salada", "quinoa", "abacate"] },
@@ -60,7 +61,11 @@ const findOneByFood = (food, done) => {
 };
 
 const findPersonById = (personId, done) => {
-  done(null /*, data*/);
+  Person.findById({ _id: personId}, (err, data) => {
+    if (err) return done(err)
+      done(null, data);
+  })
+  
 };
 
 const findEditThenSave = (personId, done) => {
