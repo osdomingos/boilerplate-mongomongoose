@@ -100,8 +100,10 @@ const removeById = (personId, done) => {
 
 const removeManyPeople = (done) => {
   const nameToRemove = "Mary";
-
-  done(null /*, data*/);
+  Person.deleMany({ name: nameToRemove }, (err, data) => {
+    if (err) return done(err)
+    done(null, data);
+  })
 };
 
 const queryChain = (done) => {
