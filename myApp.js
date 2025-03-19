@@ -32,11 +32,9 @@ const createAndSavePerson = (done) => {
 };
 
 const createManyPeople = (arrayOfPeople, done) => {
-  Person.create(arrayOfPeople, (err, data) => {
-    if (err) return done(err)
-    done(null, data);
-  });
-
+  Person.create(arrayOfPeople)
+    .then(data => done(null, data))
+    .catch(err => done(err));
 };
 
 createManyPeople(arrayOfPeople, (err, data) => {
@@ -85,8 +83,11 @@ const findEditThenSave = (personId, done) => {
 
 const findAndUpdate = (personName, done) => {
   const ageToSet = 20;
-
-  done(null /*, data*/);
+  Person.findOneAndUpdate({ name: personName}, { age: ageToSet }, { new: true}, (err, data) => {
+    if (err) return done(err)
+    done(null, data);
+  })
+  
 };
 
 const removeById = (personId, done) => {
