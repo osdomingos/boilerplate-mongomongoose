@@ -1,127 +1,132 @@
 require('dotenv').config();
-mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
-mongoose.connect(process.env.MONGO_URI);
+// Conectar ao MongoDB com tratamento de erro assíncrono
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('Failed to connect to MongoDB:', err));
 
+// Definição do Schema
 const personSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true
-  },
+  name: { type: String, required: true },
   age: Number,
   favoriteFoods: [String]
-})
+});
 
 let Person = mongoose.model("Person", personSchema);
 
-let arrayOfPeople = [
-  { name: "Osmar", age: 34, favoriteFoods: ["pizza", "lasanha", "estrogonofe"] },
-  { name: "Maria", age: 28, favoriteFoods: ["sushi", "temaki", "ramen"] },
-  { name: "João", age: 40, favoriteFoods: ["feijoada", "pão de queijo", "churrasco"] },
-  { name: "Ana", age: 22, favoriteFoods: ["salada", "quinoa", "abacate"] },
-  { name: "Carlos", age: 35, favoriteFoods: ["hamburguer", "batata frita", "milkshake"] }
-]
-
-const createAndSavePerson = (done) => {
-  let osmar = new Person({ name: "Osmar", age: 34, favoriteFoods: ["pizza", "lasanha", "estrogonofe"] })
-
-  osmar.save((err, data) => {
-    if (err) return done(err)
+// Exemplo de criação e salvamento de uma pessoa
+const createAndSavePerson = async (done) => {
+  try {
+    const osmar = new Person({ name: "Osmar", age: 34, favoriteFoods: ["pizza", "lasanha", "estrogonofe"] });
+    const data = await osmar.save();
     done(null, data);
-  })
+  } catch (err) {
+    done(err);
+  }
 };
 
-const createManyPeople = (arrayOfPeople, done) => {
-  Person.create(arrayOfPeople)
-    .then(data => done(null, data))
-    .catch(err => done(err));
-};
-
-createManyPeople(arrayOfPeople, (err, data) => {
-  if (err) return console.log(err)
-  console.log(data)
-});
-
-const findPeopleByName = (personName, done) => {
-  Person.find({ name: personName }, (err, data) => {
-    if (err) return done(err)
+// Função para criar múltiplas pessoas
+const createManyPeople = async (arrayOfPeople, done) => {
+  try {
+    const data = await Person.create(arrayOfPeople);
     done(null, data);
-  })
-  
+  } catch (err) {
+    done(err);
+  }
 };
 
-const findOneByFood = (food, done) => {
-  Person.findOne({ favoriteFoods: food}, (err, data) => {
-    if (err) return done(err)
+// Função para encontrar pessoas por nome
+const findPeopleByName = async (personName, done) => {
+  try {
+    const data = await Person.find({ name: personName });
     done(null, data);
-  })
-  
+  } catch (err) {
+    done(err);
+  }
 };
 
-const findPersonById = (personId, done) => {
-  Person.findById({ _id: personId}, (err, data) => {
-    if (err) return done(err)
-      done(null, data);
-  })
-  
-};
-
-const findEditThenSave = (personId, done) => {
-  const foodToAdd = "hamburger";
-  
-  findPersonById(personId, (err, data) => {
-    if (err) return done(err);
-
-    data.favoriteFoods.push(foodToAdd);
-
-    data.save((err, updatedData) => {
-      if (err) return done(err);
-      done(null, updatedData);
-    })
-  })
-};
-
-const findAndUpdate = (personName, done) => {
-  const ageToSet = 20;
-  Person.findOneAndUpdate({ name: personName}, { age: ageToSet }, { new: true}, (err, data) => {
-    if (err) return done(err)
+// Função para encontrar uma pessoa por um alimento favorito
+const findOneByFood = async (food, done) => {
+  try {
+    const data = await Person.findOne({ favoriteFoods: food });
     done(null, data);
-  })
-  
+  } catch (err) {
+    done(err);
+  }
 };
 
-const removeById = (personId, done) => {
-  Person.findByIdAndRemove(personId, (err, data) => {
-    if (err) done(err)
+// Função para encontrar uma pessoa por ID
+const findPersonById = async (personId, done) => {
+  try {
+    const data = await Person.findById(personId);
     done(null, data);
-  })
-  
+  } catch (err) {
+    done(err);
+  }
 };
 
-const removeManyPeople = (done) => {
-  const nameToRemove = "Mary";
-  Person.deleteMany({ name: nameToRemove }, (err, data) => {
-    if (err) return done(err)
-    done(null, data);
-  })
+// Função para editar e salvar a pessoa
+const findEditThenSave = async (personId, done) => {
+  try {
+    const data = await findPersonById(personId, done);
+    data.favoriteFoods.push("hamburger");
+    const updatedData = await data.save();
+    done(null, updatedData);
+  } catch (err) {
+    done(err);
+  }
 };
 
-const queryChain = (done) => {
-  const foodToSearch = "burrito";
-
-  Person.find({ favoriteFoods: { $in: [foodToSearch]} }).limit(2).select('-age').sort({ name: 1}).exec((err, data) => {
-    if (err) return done(err)
+// Função para atualizar a idade de uma pessoa
+const findAndUpdate = async (personName, done) => {
+  try {
+    const data = await Person.findOneAndUpdate({ name: personName }, { age: 20 }, { new: true });
     done(null, data);
-  })
-  
+  } catch (err) {
+    done(err);
+  }
+};
+
+// Função para remover uma pessoa pelo ID
+const removeById = async (personId, done) => {
+  try {
+    const data = await Person.findByIdAndRemove(personId);
+    done(null, data);
+  } catch (err) {
+    done(err);
+  }
+};
+
+// Função para remover várias pessoas
+const removeManyPeople = async (done) => {
+  try {
+    const data = await Person.deleteMany({ name: "Mary" });
+    done(null, data);
+  } catch (err) {
+    done(err);
+  }
+};
+
+// Função para encadear consultas
+const queryChain = async (done) => {
+  try {
+    const data = await Person.find({ favoriteFoods: { $in: ["burrito"] } })
+      .limit(2)
+      .select('-age')
+      .sort({ name: 1 })
+      .exec();
+    done(null, data);
+  } catch (err) {
+    done(err);
+  }
 };
 
 /** **Well Done !!**
-/* You completed these challenges, let's go celebrate !
+ * You completed these challenges, let's go celebrate!
  */
 
 //----- **DO NOT EDIT BELOW THIS LINE** ----------------------------------
-
 exports.PersonModel = Person;
 exports.createAndSavePerson = createAndSavePerson;
 exports.findPeopleByName = findPeopleByName;
